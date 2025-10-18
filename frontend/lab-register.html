@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Registration - MedFlex</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    Register Your Lab
+                </h2>
+                <p class="mt-2 text-center text-sm text-gray-600">
+                    Create a new lab account
+                </p>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-8">
+                <form id="registerForm" class="space-y-6">
+                    <div>
+                        <label for="lab_name" class="block text-sm font-medium text-gray-700">
+                            Lab Name *
+                        </label>
+                        <input id="lab_name" name="lab_name" type="text" required 
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="location" class="block text-sm font-medium text-gray-700">
+                            Location *
+                        </label>
+                        <input id="location" name="location" type="text" required 
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="contact_num" class="block text-sm font-medium text-gray-700">
+                            Contact Number * (Sri Lankan format: 0771234567)
+                        </label>
+                        <input id="contact_num" name="contact_num" type="tel" required 
+                            pattern="0[0-9]{9}"
+                            placeholder="0771234567"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <p class="mt-1 text-xs text-gray-500">Enter 10 digits starting with 0</p>
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">
+                            Email *
+                        </label>
+                        <input id="email" name="email" type="email" required 
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700">
+                            Username *
+                        </label>
+                        <input id="username" name="username" type="text" required minlength="3"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">
+                            Password *
+                        </label>
+                        <input id="password" name="password" type="password" required minlength="8"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <p class="mt-1 text-xs text-gray-500">
+                            • At least 8 characters<br>
+                            • Include uppercase and lowercase letters<br>
+                            • Include at least one number
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="confirm_password" class="block text-sm font-medium text-gray-700">
+                            Confirm Password *
+                        </label>
+                        <input id="confirm_password" name="confirm_password" type="password" required minlength="8"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <button type="submit" 
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Register
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4 text-center">
+                    <a href="lab-login.html" class="text-sm text-blue-600 hover:text-blue-500">
+                        Already have an account? Sign in
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Validate phone number (Sri Lankan format)
+            const phoneRegex = /^0[0-9]{9}$/;
+            if (!phoneRegex.test(data.contact_num)) {
+                alert('Please enter a valid Sri Lankan phone number (10 digits starting with 0)');
+                return;
+            }
+            
+            // Validate password strength
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+            if (!passwordRegex.test(data.password)) {
+                alert('Password must be at least 8 characters and contain uppercase, lowercase, and a number');
+                return;
+            }
+            
+            // Check password match
+            if (data.password !== data.confirm_password) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            // Remove confirm_password before sending to API
+            delete data.confirm_password;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/lab/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Registration successful! Please login.');
+                    window.location.href = 'lab-login.html';
+                } else {
+                    alert('Registration failed: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert('Registration failed. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
