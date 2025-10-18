@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard - MedFlex</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-green-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">MedFlex Patient Portal</h1>
+            <div>
+                <span id="patientName" class="mr-4"></span>
+                <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Tabs -->
+        <div class="mb-6 border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8">
+                <button onclick="showTab('profile')" id="profileTab" class="tab-button border-b-2 border-green-500 py-4 px-1 text-green-600 font-medium">
+                    My Profile
+                </button>
+                <button onclick="showTab('reports')" id="reportsTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-gray-500 hover:text-gray-700 font-medium">
+                    My Reports
+                </button>
+                <button onclick="showTab('predictions')" id="predictionsTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-gray-500 hover:text-gray-700 font-medium">
+                    Prediction History
+                </button>
+            </nav>
+        </div>
+
+        <!-- Profile Tab -->
+        <div id="profileSection" class="tab-content">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-2xl font-semibold mb-6">My Profile</h2>
+                <div id="profileInfo" class="grid grid-cols-2 gap-4">
+                    <!-- Profile info will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reportsSection" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="p-4 bg-gray-50 border-b">
+                    <h2 class="text-xl font-semibold">My Lab Reports</h2>
+                </div>
+                <div id="reportsContainer">
+                    <!-- Reports will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Predictions Tab -->
+        <div id="predictionsSection" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="p-4 bg-gray-50 border-b">
+                    <h2 class="text-xl font-semibold">Prediction History</h2>
+                </div>
+                <div id="predictionsContainer" class="p-6">
+                    <!-- Predictions will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Detail Modal -->
+    <div id="reportModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-semibold">Report Details</h3>
+                <button onclick="closeReportModal()" class="text-gray-600 hover:text-gray-900">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="reportDetails">
+                <!-- Report details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="patient-dashboard.js"></script>
+</body>
+</html>
