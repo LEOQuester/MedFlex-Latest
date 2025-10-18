@@ -7,8 +7,6 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 
-<<<<<<< HEAD
-=======
 // Configure session for CORS - more permissive settings for development
 ini_set('session.cookie_samesite', 'Lax');
 ini_set('session.cookie_secure', '0');
@@ -46,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Start session
 session_start();
 
->>>>>>> 05b5dff91513ac51d7ff77f8ab2fa219bb8439b2
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/config/database.php';
 require __DIR__ . '/config/helpers.php';
@@ -58,32 +55,6 @@ require __DIR__ . '/src/Controllers/PatientAuth.controller.php';
 
 $app = AppFactory::create();
 
-<<<<<<< HEAD
-$app->addErrorMiddleware(true, true, true);
-
-$app->addBodyParsingMiddleware();
-
-$app->add(function (Request $request, $handler) {
-    $response = $handler->handle($request);
-    return $response
-        ->withHeader('Access-Control-Allow-Origin', '*')
-        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-});
-
-$app->group('/api', function($app) {
-    $app->get('/patients', 'handleGetAllPatients');
-    
-    $app->get('/patients/{id}', 'handleGetPatient');
-    
-    $app->post('/patients', 'handleCreatePatient');
-    
-    $app->put('/patients/{id}', 'handleUpdatePatient');
-    
-    $app->delete('/patients/{id}', 'handleDeletePatient');
-});
-
-=======
 
 $app->addErrorMiddleware(true, true, true);
 
@@ -134,5 +105,4 @@ $app->group('/api', function($app) {
 });
 
 
->>>>>>> 05b5dff91513ac51d7ff77f8ab2fa219bb8439b2
 $app->run();
