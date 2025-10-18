@@ -1,8 +1,4 @@
 <?php
-<<<<<<< HEAD
-=======
-
->>>>>>> 05b5dff91513ac51d7ff77f8ab2fa219bb8439b2
 
 require_once __DIR__ . '/../../config/database.php';
 
@@ -45,10 +41,6 @@ function insertPatient($conn, $data) {
     $username = mysqli_real_escape_string($conn, $data['username']);
     $password = mysqli_real_escape_string($conn, $data['password']);
     
-<<<<<<< HEAD
-=======
-   
->>>>>>> 05b5dff91513ac51d7ff77f8ab2fa219bb8439b2
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
     
     $query = "INSERT INTO Patient (F_name, L_name, DOB, Gender, Address, Email, Username, Password_Hash) 
@@ -70,10 +62,6 @@ function updatePatientById($conn, $id, $data) {
     $email = mysqli_real_escape_string($conn, $data['email']);
     $username = mysqli_real_escape_string($conn, $data['username']);
     
-<<<<<<< HEAD
-=======
-   
->>>>>>> 05b5dff91513ac51d7ff77f8ab2fa219bb8439b2
     $passwordUpdate = '';
     if (isset($data['password']) && !empty($data['password'])) {
         $hashed_password = password_hash($data['password'], PASSWORD_DEFAULT);
