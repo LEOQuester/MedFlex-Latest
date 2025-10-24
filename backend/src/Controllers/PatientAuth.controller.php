@@ -8,7 +8,6 @@ require_once __DIR__ . '/../Models/PredictionHistory.model.php';
 function handlePatientGetReports($request, $response) {
     global $conn;
     
-    // Check authentication
     $auth = checkAuth('patient');
     if (!$auth['authenticated']) {
         return jsonResponse($response, ['success' => false, 'message' => $auth['message']], 401);
@@ -23,7 +22,6 @@ function handlePatientGetReports($request, $response) {
 function handlePatientGetReport($request, $response, $args) {
     global $conn;
     
-    // Check authentication
     $auth = checkAuth('patient');
     if (!$auth['authenticated']) {
         return jsonResponse($response, ['success' => false, 'message' => $auth['message']], 401);
@@ -44,7 +42,6 @@ function handlePatientGetReport($request, $response, $args) {
 function handlePatientGetPredictions($request, $response) {
     global $conn;
     
-    // Check authentication
     $auth = checkAuth('patient');
     if (!$auth['authenticated']) {
         return jsonResponse($response, ['success' => false, 'message' => $auth['message']], 401);
@@ -62,7 +59,6 @@ function handlePatientGetPredictions($request, $response) {
 function handlePatientGetProfile($request, $response) {
     global $conn;
     
-    // Check authentication
     $auth = checkAuth('patient');
     if (!$auth['authenticated']) {
         return jsonResponse($response, ['success' => false, 'message' => $auth['message']], 401);

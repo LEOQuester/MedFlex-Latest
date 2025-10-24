@@ -1,3 +1,5 @@
 slim
 psr 
 http
+
+"just type composer install it will bring you all the libraries to the project!!"

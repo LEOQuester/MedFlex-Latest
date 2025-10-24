@@ -3,15 +3,12 @@
 require_once __DIR__ . '/../Models/PredictionHistory.model.php';
 
 function callPredictionAPI($reportData, $patientDOB, $patientGender) {
-    // Calculate age from DOB
     $dob = new DateTime($patientDOB);
     $now = new DateTime();
     $age = $now->diff($dob)->y;
     
-    // Map gender to numeric (Male=1, Female=0)
     $sex = ($patientGender === 'Male' || $patientGender === 'M') ? 1 : 0;
     
-    // Prepare request body
     $requestBody = [
         'age' => $age,
         'sex' => $sex,
@@ -41,8 +38,7 @@ function callPredictionAPI($reportData, $patientDOB, $patientGender) {
         'bilirubin_direct' => floatval($reportData['bilirubin_direct'])
     ];
     
-    // Initialize cURL
-    $ch = curl_init('https://galvanprime.lk/prediction.php');
+    $ch = curl_init('http://165.22.108.248/predict');
     
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
@@ -53,28 +49,23 @@ function callPredictionAPI($reportData, $patientDOB, $patientGender) {
     ]);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     
-    // Disable SSL verification for development (NOT recommended for production!)
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
     
-    // Execute request
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $curlError = curl_error($ch);
     
     curl_close($ch);
     
-    // Check for cURL errors
     if ($curlError) {
         return ['success' => false, 'message' => 'Prediction API error: ' . $curlError];
     }
     
-    // Check HTTP status code
     if ($httpCode !== 200) {
         return ['success' => false, 'message' => 'Prediction API returned status code: ' . $httpCode];
     }
     
-    // Decode response
     $predictions = json_decode($response, true);
     
     if (json_last_error() !== JSON_ERROR_NONE) {
@@ -89,7 +80,6 @@ function callPredictionAPI($reportData, $patientDOB, $patientGender) {
 }
 
 function processPredictions($conn, $report_id, $predictions) {
-    // Extract prediction values and statuses
     $ferritin = $predictions['Ferritin']['value'] ?? 0;
     $ferritin_status = $predictions['Ferritin']['status'] ?? 'Normal';
     
@@ -107,14 +97,12 @@ function processPredictions($conn, $report_id, $predictions) {
     $cystatin_c = $predictions['Cystatin_C']['value'] ?? 0;
     $cystatin_c_status = $predictions['Cystatin_C']['status'] ?? 'Normal';
     
-    // Determine abnormality (1 = abnormal, 0 = normal)
     $ferritin_abnormal = ($ferritin_status !== 'Normal') ? 1 : 0;
     $b12_abnormal = ($b12_status !== 'Normal') ? 1 : 0;
     $crp_abnormal = ($crp_status !== 'Normal') ? 1 : 0;
     $cystatin_c_abnormal = ($cystatin_c_status !== 'Normal') ? 1 : 0;
     $hba1c_abnormal = ($hba1c_status !== 'Normal') ? 1 : 0;
     
-    // Prepare data for insertion
     $predictionData = [
         'report_id' => $report_id,
         'ferritin' => $ferritin,
@@ -130,7 +118,6 @@ function processPredictions($conn, $report_id, $predictions) {
         'hba1c_abnormal' => $hba1c_abnormal
     ];
     
-    // Insert prediction history
     $prediction_id = insertPredictionHistory($conn, $predictionData);
     
     if ($prediction_id) {

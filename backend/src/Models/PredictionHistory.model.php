@@ -23,7 +23,6 @@ function insertPredictionHistory($conn, $data) {
         return mysqli_insert_id($conn);
     }
     
-    // Log MySQL error
     error_log("MySQL Error in insertPredictionHistory: " . mysqli_error($conn));
     error_log("Query: " . $query);
     

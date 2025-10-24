@@ -8,23 +8,28 @@ require_once __DIR__ . '/../Models/patient.model.php';
 function handleLabCreatePatient($request, $response) {
     global $conn;
     
-    // Check authentication
+    error_log("=== handleLabCreatePatient called ===");
+    
     $auth = checkAuth('lab');
+    error_log("Auth result: " . print_r($auth, true));
+    
     if (!$auth['authenticated']) {
+        error_log("Auth failed: " . $auth['message']);
         return jsonResponse($response, ['success' => false, 'message' => $auth['message']], 401);
     }
     
     $lab_id = $auth['user_id'];
     $data = $request->getParsedBody();
     
-    // Insert patient
+    error_log("Lab ID: $lab_id");
+    error_log("Patient data: " . print_r($data, true));
+    
     $patient_id = insertPatient($conn, $data);
     
     if (!$patient_id) {
         return jsonResponse($response, ['success' => false, 'message' => 'Failed to create patient'], 400);
     }
     
-    // Link patient to lab
     $linked = linkPatientToLab($conn, $patient_id, $lab_id);
     
     if (!$linked) {
@@ -43,7 +48,6 @@ function handleLabCreatePatient($request, $response) {
 function handleLabGetPatients($request, $response) {
     global $conn;
     
-    // Check authentication
     $auth = checkAuth('lab');
     if (!$auth['authenticated']) {
         return jsonResponse($response, ['success' => false, 'message' => $auth['message']], 401);
@@ -62,7 +66,6 @@ function handleLabCreateReport($request, $response) {
     global $conn;
     
     try {
-        // Check authentication
         $auth = checkAuth('lab');
         if (!$auth['authenticated']) {
             return jsonResponse($response, ['success' => false, 'message' => $auth['message']], 401);
@@ -89,7 +92,6 @@ function handleLabCreateReport($request, $response) {
 function handleLabGetReports($request, $response) {
     global $conn;
     
-    // Check authentication
     $auth = checkAuth('lab');
     if (!$auth['authenticated']) {
         return jsonResponse($response, ['success' => false, 'message' => $auth['message']], 401);
@@ -102,14 +104,12 @@ function handleLabGetReports($request, $response) {
         return jsonResponse($response, ['success' => false, 'message' => 'Patient ID is required'], 400);
     }
     
-    // Verify patient is linked to this lab
     if (!isPatientLinkedToLab($conn, $patient_id, $lab_id)) {
         return jsonResponse($response, ['success' => false, 'message' => 'Patient not linked to this lab'], 403);
     }
     
     $reports = findReportsByPatientIdForLab($conn, $patient_id, $lab_id);
     
-    // Get predictions for each report
     foreach ($reports as &$report) {
         $prediction = findPredictionByReportId($conn, $report['Report_ID']);
         $report['prediction'] = $prediction;

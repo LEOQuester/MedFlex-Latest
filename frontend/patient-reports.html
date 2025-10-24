@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Reports - MedFlex</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">MedFlex Lab Portal</h1>
+            <button onclick="goBack()" class="bg-gray-500 hover:bg-gray-600 px-4 py-2 rounded">Back to Dashboard</button>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-2xl font-semibold mb-4">Patient Reports</h2>
+            <p id="patientInfo" class="text-gray-600 mb-6">Loading patient information...</p>
+            
+            <div id="reportsContainer">
+                <p class="text-center text-gray-500 py-8">Loading reports...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        // Get patient_id from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const patientId = urlParams.get('patient_id');
+        
+        if (!patientId) {
+            alert('No patient ID provided');
+            window.location.href = 'lab-dashboard.html';
+        }
+        
+        async function loadPatientReports() {
+            try {
+                // Load patient reports
+                const response = await fetch(`${API_BASE}/api/lab/reports?patient_id=${patientId}`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.reports) {
+                    if (data.reports.length > 0) {
+                        displayReports(data.reports);
+                    } else {
+                        document.getElementById('reportsContainer').innerHTML = 
+                            '<p class="text-center text-gray-500 py-8">No reports found for this patient</p>';
+                    }
+                } else {
+                    document.getElementById('reportsContainer').innerHTML = 
+                        '<p class="text-center text-red-500 py-8">Error loading reports: ' + (data.message || 'Unknown error') + '</p>';
+                }
+            } catch (error) {
+                console.error('Error loading reports:', error);
+                document.getElementById('reportsContainer').innerHTML = 
+                    '<p class="text-center text-red-500 py-8">Failed to load reports</p>';
+            }
+        }
+        
+        function displayReports(reports) {
+            const container = document.getElementById('reportsContainer');
+            
+            container.innerHTML = reports.map((report, index) => `
+                <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold">Report #${report.Report_ID}</h3>
+                            <p class="text-sm text-gray-500">Date: ${report.created_at || 'N/A'}</p>
+                        </div>
+                        <button onclick="toggleFullReport(${index})" 
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                            View Full Report
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Hemoglobin (Hb)</p>
+                            <p class="font-semibold">${report.Hb || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">WBC</p>
+                            <p class="font-semibold">${report.WBC || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Creatinine</p>
+                            <p class="font-semibold">${report.Creatinine || 'N/A'}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Full Report Details (Hidden by default) -->
+                    <div id="fullReport${index}" class="hidden">
+                        <div class="border-t pt-4 mt-4">
+                            <h4 class="font-semibold mb-3">Complete Blood Count (CBC)</h4>
+                            <div class="grid grid-cols-4 gap-3 text-sm mb-4">
+                                <div><span class="text-gray-600">Hb:</span> <span class="font-semibold">${report.Hb || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">HCT:</span> <span class="font-semibold">${report.HCT || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">RBC:</span> <span class="font-semibold">${report.RBC || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">MCV:</span> <span class="font-semibold">${report.MCV || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">MCH:</span> <span class="font-semibold">${report.MCH || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">MCHC:</span> <span class="font-semibold">${report.MCHC || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">WBC:</span> <span class="font-semibold">${report.WBC || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">Neutrophils:</span> <span class="font-semibold">${report.Neutrophils || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">Lymphocytes:</span> <span class="font-semibold">${report.Lymphocytes || 'N/A'}</span></div>
+                            </div>
+                            
+                            <h4 class="font-semibold mb-3">Liver Function Tests</h4>
+                            <div class="grid grid-cols-4 gap-3 text-sm mb-4">
+                                <div><span class="text-gray-600">ALT:</span> <span class="font-semibold">${report.ALT || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">AST:</span> <span class="font-semibold">${report.AST || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">GGT:</span> <span class="font-semibold">${report.GGT || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">Albumin:</span> <span class="font-semibold">${report.Albumin || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">ALP:</span> <span class="font-semibold">${report.ALP || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">Bilirubin Total:</span> <span class="font-semibold">${report.Bilirubin_Total || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">Bilirubin Direct:</span> <span class="font-semibold">${report.Bilirubin_Direct || 'N/A'}</span></div>
+                            </div>
+                            
+                            <h4 class="font-semibold mb-3">Kidney Function & Metabolic</h4>
+                            <div class="grid grid-cols-4 gap-3 text-sm mb-4">
+                                <div><span class="text-gray-600">Urea:</span> <span class="font-semibold">${report.Urea || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">Creatinine:</span> <span class="font-semibold">${report.Creatinine || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">eGFR:</span> <span class="font-semibold">${report.eGFR || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">FPG:</span> <span class="font-semibold">${report.FPG || 'N/A'}</span></div>
+                            </div>
+                            
+                            <h4 class="font-semibold mb-3">Lipid Profile</h4>
+                            <div class="grid grid-cols-4 gap-3 text-sm mb-4">
+                                <div><span class="text-gray-600">Triglycerides:</span> <span class="font-semibold">${report.Triglycerides || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">Total Cholesterol:</span> <span class="font-semibold">${report.Cholesterol_Total || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">HDL:</span> <span class="font-semibold">${report.HDL || 'N/A'}</span></div>
+                                <div><span class="text-gray-600">LDL:</span> <span class="font-semibold">${report.LDL || 'N/A'}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${report.prediction ? `
+                        <div class="bg-blue-50 p-4 rounded mt-4">
+                            <h4 class="font-semibold mb-2">AI Predictions</h4>
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <span class="text-gray-600">Ferritin:</span>
+                                    <span class="font-semibold ml-2">${report.prediction.Ferritin || 'N/A'}</span>
+                                    <span class="${report.prediction.ferritin_abnormal == 1 ? 'text-red-600' : 'text-green-600'} ml-2">
+                                        ${report.prediction.ferritin_abnormal == 1 ? 'Abnormal' : 'Normal'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">Vitamin B12:</span>
+                                    <span class="font-semibold ml-2">${report.prediction.Vitamin_B12 || 'N/A'}</span>
+                                    <span class="${report.prediction.b12_abnormal == 1 ? 'text-red-600' : 'text-green-600'} ml-2">
+                                        ${report.prediction.b12_abnormal == 1 ? 'Abnormal' : 'Normal'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">CRP:</span>
+                                    <span class="font-semibold ml-2">${report.prediction.CRP || 'N/A'}</span>
+                                    <span class="${report.prediction.crp_abnormal == 1 ? 'text-red-600' : 'text-green-600'} ml-2">
+                                        ${report.prediction.crp_abnormal == 1 ? 'Abnormal' : 'Normal'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">HbA1c:</span>
+                                    <span class="font-semibold ml-2">${report.prediction.HbA1c || 'N/A'}</span>
+                                    <span class="${report.prediction.hba1c_abnormal == 1 ? 'text-red-600' : 'text-green-600'} ml-2">
+                                        ${report.prediction.hba1c_abnormal == 1 ? 'Abnormal' : 'Normal'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">Cystatin C:</span>
+                                    <span class="font-semibold ml-2">${report.prediction.Cystatin_C || 'N/A'}</span>
+                                    <span class="${report.prediction.cystatin_c_abnormal == 1 ? 'text-red-600' : 'text-green-600'} ml-2">
+                                        ${report.prediction.cystatin_c_abnormal == 1 ? 'Abnormal' : 'Normal'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">AFP:</span>
+                                    <span class="font-semibold ml-2">${report.prediction.AFP || 'N/A'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ` : '<p class="text-gray-500 text-sm mt-4">No predictions available</p>'}
+                </div>
+            `).join('');
+        }
+        
+        function toggleFullReport(index) {
+            const fullReport = document.getElementById(`fullReport${index}`);
+            if (fullReport.classList.contains('hidden')) {
+                fullReport.classList.remove('hidden');
+            } else {
+                fullReport.classList.add('hidden');
+            }
+        }
+        
+        function goBack() {
+            window.location.href = 'lab-dashboard.html';
+        }
+        
+        // Load reports on page load
+        loadPatientReports();
+    </script>
+</body>
+</html>

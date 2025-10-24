@@ -81,7 +81,6 @@ function findReportsByPatientIdForLab($conn, $patient_id, $lab_id) {
     $patient_id = mysqli_real_escape_string($conn, $patient_id);
     $lab_id = mysqli_real_escape_string($conn, $lab_id);
     
-    // Check if patient is linked to this lab
     $checkQuery = "SELECT 1 FROM Lab_Patient WHERE Patient_ID = '$patient_id' AND Lab_ID = '$lab_id'";
     $checkResult = mysqli_query($conn, $checkQuery);
     

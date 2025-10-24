@@ -1,6 +1,5 @@
 const API_BASE = 'http://localhost:8000';
 
-// Check authentication on load
 window.addEventListener('DOMContentLoaded', async () => {
     await checkAuth();
     await loadPatients();
@@ -27,7 +26,6 @@ async function checkAuth() {
         }
         
         console.log('Authentication successful!');
-        // Load lab info if needed
         document.getElementById('labName').textContent = data.username || 'Lab User';
     } catch (error) {
         console.error('Auth check failed:', error);
@@ -50,26 +48,21 @@ async function logout() {
 }
 
 function showTab(tabName) {
-    // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
     });
     
-    // Remove active state from all tab buttons
     document.querySelectorAll('.tab-button').forEach(btn => {
         btn.classList.remove('border-blue-500', 'text-blue-600');
         btn.classList.add('border-transparent', 'text-gray-500');
     });
     
-    // Show selected tab
     document.getElementById(`${tabName}Section`).classList.remove('hidden');
     
-    // Activate selected tab button
     const activeBtn = document.getElementById(`${tabName}Tab`);
     activeBtn.classList.add('border-blue-500', 'text-blue-600');
     activeBtn.classList.remove('border-transparent', 'text-gray-500');
     
-    // Load patients for report form when switching to addReport tab
     if (tabName === 'addReport') {
         loadPatientsForReport();
     }
@@ -131,14 +124,12 @@ async function loadPatientsForReport() {
     }
 }
 
-// Handle Add Patient Form
 document.getElementById('addPatientForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
     
-    // Validate phone number (Sri Lankan format)
     if (data.phone) {
         const phoneRegex = /^0[0-9]{9}$/;
         if (!phoneRegex.test(data.phone)) {
@@ -147,20 +138,17 @@ document.getElementById('addPatientForm').addEventListener('submit', async (e) =
         }
     }
     
-    // Validate password strength
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(data.password)) {
         alert('Password must be at least 8 characters and contain uppercase, lowercase, and a number');
         return;
     }
     
-    // Check password match
     if (data.password !== data.confirm_password) {
         alert('Passwords do not match!');
         return;
     }
     
-    // Remove confirm_password before sending to API
     delete data.confirm_password;
     
     try {
@@ -188,14 +176,12 @@ document.getElementById('addPatientForm').addEventListener('submit', async (e) =
     }
 });
 
-// Handle Add Report Form
 document.getElementById('addReportForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
     
-    // Convert all numeric fields to numbers
     Object.keys(data).forEach(key => {
         if (key !== 'patient_id') {
             data[key] = parseFloat(data[key]);
@@ -221,7 +207,6 @@ document.getElementById('addReportForm').addEventListener('submit', async (e) =>
         console.log('Response status:', response.status);
         console.log('Response headers:', [...response.headers.entries()]);
         
-        // Get raw text first
         const rawText = await response.text();
         console.log('Raw response:', rawText);
         console.log('First 1000 chars:', rawText.substring(0, 1000));
@@ -229,7 +214,6 @@ document.getElementById('addReportForm').addEventListener('submit', async (e) =>
         button.disabled = false;
         button.textContent = 'Create Report & Get Predictions';
         
-        // Try to parse as JSON
         try {
             const result = JSON.parse(rawText);
             console.log('Parsed result:', result);
@@ -274,6 +258,5 @@ function closeModal() {
 }
 
 function viewPatientReports(patientId) {
-    // Redirect to reports view page
     window.location.href = `patient-reports.html?patient_id=${patientId}`;
 }

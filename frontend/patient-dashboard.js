@@ -1,6 +1,5 @@
 const API_BASE = 'http://localhost:8000';
 
-// Check authentication on load
 window.addEventListener('DOMContentLoaded', async () => {
     await checkAuth();
     await loadProfile();
@@ -40,26 +39,21 @@ async function logout() {
 }
 
 function showTab(tabName) {
-    // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
     });
     
-    // Remove active state from all tab buttons
     document.querySelectorAll('.tab-button').forEach(btn => {
         btn.classList.remove('border-green-500', 'text-green-600');
         btn.classList.add('border-transparent', 'text-gray-500');
     });
     
-    // Show selected tab
     document.getElementById(`${tabName}Section`).classList.remove('hidden');
     
-    // Activate selected tab button
     const activeBtn = document.getElementById(`${tabName}Tab`);
     activeBtn.classList.add('border-green-500', 'text-green-600');
     activeBtn.classList.remove('border-transparent', 'text-gray-500');
     
-    // Load data for the selected tab
     if (tabName === 'reports') {
         loadReports();
     } else if (tabName === 'predictions') {
