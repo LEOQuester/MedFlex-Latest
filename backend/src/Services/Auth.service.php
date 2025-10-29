@@ -3,8 +3,11 @@
 require_once __DIR__ . '/../Models/patient.model.php';
 require_once __DIR__ . '/../Models/Lab.model.php';
 require_once __DIR__ . '/patient.service.php';
+require_once __DIR__ . '/../../config/validators.php';
 
 function registerPatient($conn, $data) {
+    $data = sanitizeData($data);
+    
     $required = ['f_name', 'l_name', 'dob', 'gender', 'email', 'username', 'password'];
     foreach ($required as $field) {
         if (empty($data[$field])) {
@@ -12,8 +15,46 @@ function registerPatient($conn, $data) {
         }
     }
     
-    if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-        return ['success' => false, 'message' => 'Invalid email format'];
+    $nameValidation = validateName($data['f_name'], 'First name');
+    if (!$nameValidation['valid']) {
+        return ['success' => false, 'message' => $nameValidation['message']];
+    }
+    
+    $nameValidation = validateName($data['l_name'], 'Last name');
+    if (!$nameValidation['valid']) {
+        return ['success' => false, 'message' => $nameValidation['message']];
+    }
+    
+    $dobValidation = validateDOB($data['dob']);
+    if (!$dobValidation['valid']) {
+        return ['success' => false, 'message' => $dobValidation['message']];
+    }
+    
+    $genderValidation = validateGender($data['gender']);
+    if (!$genderValidation['valid']) {
+        return ['success' => false, 'message' => $genderValidation['message']];
+    }
+    
+    if (!empty($data['address'])) {
+        $addressValidation = validateAddress($data['address']);
+        if (!$addressValidation['valid']) {
+            return ['success' => false, 'message' => $addressValidation['message']];
+        }
+    }
+    
+    $emailValidation = validateEmail($data['email']);
+    if (!$emailValidation['valid']) {
+        return ['success' => false, 'message' => $emailValidation['message']];
+    }
+    
+    $usernameValidation = validateUsername($data['username']);
+    if (!$usernameValidation['valid']) {
+        return ['success' => false, 'message' => $usernameValidation['message']];
+    }
+    
+    $passwordValidation = validatePassword($data['password']);
+    if (!$passwordValidation['valid']) {
+        return ['success' => false, 'message' => $passwordValidation['message']];
     }
     
     $existingPatient = findPatientByUsername($conn, $data['username']);
@@ -37,10 +78,18 @@ function registerPatient($conn, $data) {
 }
 
 function loginPatient($conn, $username, $password) {
-    if (empty($username) || empty($password)) {
-        return ['success' => false, 'message' => 'Username and password are required'];
+    $username = sanitizeInput($username);
+    $password = sanitizeInput($password);
+    
+    if (empty($username)) {
+        return ['success' => false, 'message' => 'Username is required'];
     }
     
+    if (empty($password)) {
+        return ['success' => false, 'message' => 'Password is required'];
+    }
+    
+    // Find patient
     $patient = findPatientByUsername($conn, $username);
     
     if (!$patient) {
@@ -65,6 +114,8 @@ function loginPatient($conn, $username, $password) {
 }
 
 function registerLab($conn, $data) {
+    $data = sanitizeData($data);
+    
     $required = ['lab_name', 'location', 'contact_num', 'email', 'username', 'password'];
     foreach ($required as $field) {
         if (empty($data[$field])) {
@@ -72,8 +123,43 @@ function registerLab($conn, $data) {
         }
     }
     
-    if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-        return ['success' => false, 'message' => 'Invalid email format'];
+    $nameValidation = validateName($data['lab_name'], 'Lab name');
+    if (!$nameValidation['valid']) {
+        return ['success' => false, 'message' => $nameValidation['message']];
+    }
+    
+    if (strlen($data['lab_name']) > 100) {
+        return ['success' => false, 'message' => 'Lab name must not exceed 100 characters'];
+    }
+    
+    $locationValidation = validateAddress($data['location'], 'Location');
+    if (!$locationValidation['valid']) {
+        return ['success' => false, 'message' => $locationValidation['message']];
+    }
+    
+    if (strlen($data['location']) > 100) {
+        return ['success' => false, 'message' => 'Location must not exceed 100 characters'];
+    }
+    
+    // Validate contact number
+    $phoneValidation = validatePhoneNumber($data['contact_num']);
+    if (!$phoneValidation['valid']) {
+        return ['success' => false, 'message' => $phoneValidation['message']];
+    }
+    
+    $emailValidation = validateEmail($data['email']);
+    if (!$emailValidation['valid']) {
+        return ['success' => false, 'message' => $emailValidation['message']];
+    }
+    
+    $usernameValidation = validateUsername($data['username']);
+    if (!$usernameValidation['valid']) {
+        return ['success' => false, 'message' => $usernameValidation['message']];
+    }
+    
+    $passwordValidation = validatePassword($data['password']);
+    if (!$passwordValidation['valid']) {
+        return ['success' => false, 'message' => $passwordValidation['message']];
     }
     
     $existingLab = findLabByUsername($conn, $data['username']);
@@ -84,6 +170,11 @@ function registerLab($conn, $data) {
     $existingEmail = findLabByEmail($conn, $data['email']);
     if ($existingEmail) {
         return ['success' => false, 'message' => 'Email already exists'];
+    }
+    
+    $existingContact = findLabByContactNum($conn, $data['contact_num']);
+    if ($existingContact) {
+        return ['success' => false, 'message' => 'Contact number already exists'];
     }
     
     $lab_id = insertLab($conn, $data);
@@ -97,8 +188,15 @@ function registerLab($conn, $data) {
 }
 
 function loginLab($conn, $username, $password) {
-    if (empty($username) || empty($password)) {
-        return ['success' => false, 'message' => 'Username and password are required'];
+    $username = sanitizeInput($username);
+    $password = sanitizeInput($password);
+    
+    if (empty($username)) {
+        return ['success' => false, 'message' => 'Username is required'];
+    }
+    
+    if (empty($password)) {
+        return ['success' => false, 'message' => 'Password is required'];
     }
     
     $lab = findLabByUsername($conn, $username);
@@ -111,6 +209,7 @@ function loginLab($conn, $username, $password) {
         return ['success' => false, 'message' => 'Invalid credentials'];
     }
     
+    // Remove sensitive data
     unset($lab['Password_Hash']);
     
     if (session_status() === PHP_SESSION_NONE) {

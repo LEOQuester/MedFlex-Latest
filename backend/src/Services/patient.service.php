@@ -1,50 +1,68 @@
 <?php
 
-
 require_once __DIR__ . '/../Models/patient.model.php';
+require_once __DIR__ . '/../../config/validators.php';
 
 function validatePatientData($data, $isUpdate = false) {
     $errors = [];
-    $required_fields = ['f_name', 'l_name', 'dob', 'gender', 'address', 'email', 'username'];
     
+    $data = sanitizeData($data);
+    
+    $required_fields = ['f_name', 'l_name', 'dob', 'gender', 'address', 'email', 'username'];
     
     if (!$isUpdate) {
         $required_fields[] = 'password';
     }
     
-   
     foreach ($required_fields as $field) {
         if (!isset($data[$field]) || empty($data[$field])) {
             $errors[] = ucfirst(str_replace('_', ' ', $field)) . " is required";
         }
     }
     
-  
-    if (isset($data['email']) && !empty($data['email'])) {
-        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors[] = "Invalid email format";
-        }
+    if (!empty($errors)) {
+        return $errors;
     }
     
-  
-    if (isset($data['dob']) && !empty($data['dob'])) {
-        if (!strtotime($data['dob'])) {
-            $errors[] = "Invalid date of birth format";
-        }
+    $nameValidation = validateName($data['f_name'], 'First name');
+    if (!$nameValidation['valid']) {
+        $errors[] = $nameValidation['message'];
     }
     
-    
-    if (isset($data['gender']) && !empty($data['gender'])) {
-        $validGenders = ['Male', 'Female', 'Other'];
-        if (!in_array($data['gender'], $validGenders)) {
-            $errors[] = "Invalid gender value";
-        }
+    $nameValidation = validateName($data['l_name'], 'Last name');
+    if (!$nameValidation['valid']) {
+        $errors[] = $nameValidation['message'];
     }
     
-   
+    $emailValidation = validateEmail($data['email']);
+    if (!$emailValidation['valid']) {
+        $errors[] = $emailValidation['message'];
+    }
+    
+    $dobValidation = validateDOB($data['dob']);
+    if (!$dobValidation['valid']) {
+        $errors[] = $dobValidation['message'];
+    }
+    
+    $genderValidation = validateGender($data['gender']);
+    if (!$genderValidation['valid']) {
+        $errors[] = $genderValidation['message'];
+    }
+    
+    $addressValidation = validateAddress($data['address']);
+    if (!$addressValidation['valid']) {
+        $errors[] = $addressValidation['message'];
+    }
+    
+    $usernameValidation = validateUsername($data['username']);
+    if (!$usernameValidation['valid']) {
+        $errors[] = $usernameValidation['message'];
+    }
+    
     if (isset($data['password']) && !empty($data['password'])) {
-        if (strlen($data['password']) < 6) {
-            $errors[] = "Password must be at least 6 characters long";
+        $passwordValidation = validatePassword($data['password']);
+        if (!$passwordValidation['valid']) {
+            $errors[] = $passwordValidation['message'];
         }
     }
     
@@ -93,22 +111,29 @@ function updatePatient($conn, $id, $data) {
         throw new Exception("Invalid patient ID");
     }
     
+    $data = sanitizeData($data);
+    
     $errors = validatePatientData($data);
     if (!empty($errors)) {
         throw new Exception($errors[0]);
     }
     
- 
     $existingPatient = findPatientById($conn, $id);
     if (!$existingPatient) {
         throw new Exception("Patient not found", 404);
     }
     
-   
-    if ($data['email'] !== $existingPatient['email']) {
+    if ($data['email'] !== $existingPatient['Email']) {
         $emailPatient = findPatientByEmail($conn, $data['email']);
-        if ($emailPatient) {
+        if ($emailPatient && $emailPatient['Patient_ID'] != $id) {
             throw new Exception("Email already registered by another patient");
+        }
+    }
+    
+    if ($data['username'] !== $existingPatient['Username']) {
+        $usernamePatient = findPatientByUsername($conn, $data['username']);
+        if ($usernamePatient && $usernamePatient['Patient_ID'] != $id) {
+            throw new Exception("Username already taken by another patient");
         }
     }
     
@@ -124,7 +149,6 @@ function deletePatient($conn, $id) {
     if (!is_numeric($id)) {
         throw new Exception("Invalid patient ID");
     }
-    
     
     $existingPatient = findPatientById($conn, $id);
     if (!$existingPatient) {

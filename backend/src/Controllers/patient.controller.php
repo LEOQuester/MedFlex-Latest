@@ -1,8 +1,6 @@
 <?php
 
-
 require_once __DIR__ . '/../Services/patient.service.php';
-
 
 function sendJSON($response, $data, $status = 200) {
     $response->getBody()->write(json_encode($data));

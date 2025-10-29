@@ -47,6 +47,20 @@ function findLabByEmail($conn, $email) {
     return $lab;
 }
 
+function findLabByContactNum($conn, $contact_num) {
+    $contact_num = mysqli_real_escape_string($conn, $contact_num);
+    $query = "SELECT Lab_ID FROM Lab WHERE Contact_Num = '$contact_num'";
+    $result = mysqli_query($conn, $query);
+    
+    $lab = null;
+    if ($result) {
+        $lab = mysqli_fetch_assoc($result);
+        mysqli_free_result($result);
+    }
+    
+    return $lab;
+}
+
 function insertLab($conn, $data) {
     $lab_name = mysqli_real_escape_string($conn, $data['lab_name']);
     $location = mysqli_real_escape_string($conn, $data['location']);

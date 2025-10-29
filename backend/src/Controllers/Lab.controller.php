@@ -2,8 +2,10 @@
 
 require_once __DIR__ . '/../Services/Auth.service.php';
 require_once __DIR__ . '/../Services/Report.service.php';
+require_once __DIR__ . '/../Services/patient.service.php';
 require_once __DIR__ . '/../Models/Lab.model.php';
 require_once __DIR__ . '/../Models/patient.model.php';
+require_once __DIR__ . '/../../config/validators.php';
 
 function handleLabCreatePatient($request, $response) {
     global $conn;
@@ -23,6 +25,32 @@ function handleLabCreatePatient($request, $response) {
     
     error_log("Lab ID: $lab_id");
     error_log("Patient data: " . print_r($data, true));
+    
+    $data = sanitizeData($data);
+    
+    $errors = validatePatientData($data, false);
+    if (!empty($errors)) {
+        return jsonResponse($response, [
+            'success' => false, 
+            'message' => $errors[0]
+        ], 400);
+    }
+    
+    $existingEmail = findPatientByEmail($conn, $data['email']);
+    if ($existingEmail) {
+        return jsonResponse($response, [
+            'success' => false, 
+            'message' => 'Email already registered'
+        ], 400);
+    }
+    
+    $existingUsername = findPatientByUsername($conn, $data['username']);
+    if ($existingUsername) {
+        return jsonResponse($response, [
+            'success' => false, 
+            'message' => 'Username already exists'
+        ], 400);
+    }
     
     $patient_id = insertPatient($conn, $data);
     

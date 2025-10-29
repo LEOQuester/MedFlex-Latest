@@ -4,8 +4,11 @@ require_once __DIR__ . '/../Models/Report.model.php';
 require_once __DIR__ . '/../Models/patient.model.php';
 require_once __DIR__ . '/../Models/Lab.model.php';
 require_once __DIR__ . '/Prediction.service.php';
+require_once __DIR__ . '/../../config/validators.php';
 
 function createReportWithPrediction($conn, $lab_id, $data) {
+    $data = sanitizeData($data);
+    
     $required = [
         'patient_id', 'hb', 'mcv', 'wbc', 'neutrophils', 'fpg', 'egfr', 
         'creatinine', 'ast', 'alt', 'hct', 'rbc', 'mch', 'mchc', 'lymphocytes',
@@ -16,6 +19,21 @@ function createReportWithPrediction($conn, $lab_id, $data) {
     foreach ($required as $field) {
         if (!isset($data[$field]) || $data[$field] === '') {
             return ['success' => false, 'message' => ucfirst(str_replace('_', ' ', $field)) . ' is required'];
+        }
+    }
+    
+    if (!is_numeric($data['patient_id'])) {
+        return ['success' => false, 'message' => 'Invalid patient ID'];
+    }
+    
+    $numericFields = array_diff($required, ['patient_id']);
+    foreach ($numericFields as $field) {
+        if (!is_numeric($data[$field])) {
+            return ['success' => false, 'message' => ucfirst(str_replace('_', ' ', $field)) . ' must be a valid number'];
+        }
+        
+        if ($data[$field] < 0) {
+            return ['success' => false, 'message' => ucfirst(str_replace('_', ' ', $field)) . ' cannot be negative'];
         }
     }
     
